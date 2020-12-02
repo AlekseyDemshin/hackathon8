@@ -167,4 +167,4 @@ DerivedData
 # IDEA
 .idea
 
-output/*
+server/output/*
