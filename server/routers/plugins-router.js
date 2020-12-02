@@ -1,6 +1,7 @@
 var pluginsRouter = require('express').Router();
 const fs = require('fs-extra');
 const path = require('path');
+const formidable = require('formidable');
 const root = path.join(__dirname, '..');
 const outputDir = path.join(__dirname, '..', 'output')
 
@@ -10,11 +11,26 @@ pluginsRouter.post('/:template', function (req, res) {
 
     if (isValidTemplate(template)) {
         copyToOutput(template)
-        replace(template, code)
+        replace(code)
         res.status(200).send();
     } else {
         res.status(400).send();
     }
+});
+
+pluginsRouter.post('/:template/images', (req, res, next) => {
+    const form = new formidable.IncomingForm();
+    form.parse(req, function (err, fields, files) {
+        for (const [key, file] of Object.entries(files)) {
+            const fromPath = file.path;
+            const imgDir = `${outputDir}/img/${file.name}`
+            const rawData = fs.readFileSync(fromPath)
+            fs.writeFile(imgDir, rawData, function (err) {
+                if (err) console.log(err)
+            })
+        }
+    })
+    res.status(200).send();
 });
 
 // Error handler
@@ -29,33 +45,29 @@ function isValidTemplate(template) {
 }
 
 function copyToOutput(template) {
-    if (!fs.existsSync(outputDir)){
-        fs.mkdirSync(outputDir);
-    }
     const srcDir = `${root}/plugin-templates/${template}`;
-    const destDir = `${outputDir}/${template}`;
-
     try {
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir);
+        }
         fs.emptyDirSync(outputDir)
-        fs.copySync(srcDir, destDir, { recursive: true })
-        console.log('success!')
+        fs.copySync(srcDir, outputDir, { recursive: true })
     } catch (err) {
         console.error(err)
     }
 }
 
-function replace(template, code) {
-    const file = `${outputDir}/${template}/js/content.js`;
-    fs.readFile(file, 'utf8', function (err,data) {
+function replace(code) {
+    const file = `${outputDir}/js/content.js`;
+    fs.readFile(file, 'utf8', function (err, data) {
         if (err) {
-          return console.log(err);
+            return console.log(err);
         }
         var result = data.replace(/\/\/ ###code place###/g, code);
-      
         fs.writeFile(file, result, 'utf8', function (err) {
-           if (err) return console.log(err);
+            if (err) return console.log(err);
         });
-      });
+    });
 }
 
 module.exports = pluginsRouter;
