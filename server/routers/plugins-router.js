@@ -29,6 +29,9 @@ function isValidTemplate(template) {
 }
 
 function copyToOutput(template) {
+    if (!fs.existsSync(outputDir)){
+        fs.mkdirSync(outputDir);
+    }
     const srcDir = `${root}/plugin-templates/${template}`;
     const destDir = `${outputDir}/${template}`;
 
