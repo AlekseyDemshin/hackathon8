@@ -167,4 +167,4 @@ DerivedData
 # IDEA
 .idea
 
-server/output/*
+server/bundle/*

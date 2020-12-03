@@ -1,10 +1,11 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var morgan = require("morgan");
-var pluginsRouter = require("./routers/plugins-router");
+var zipRouter = require("./routers/zip-router");
 
 var app = express();
 var port = 3005;
+var httpPort = 3006;
 
 app.use(morgan("dev"));
 app.use(express.static("client"));
@@ -23,9 +24,9 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.use("/plugins", pluginsRouter);
+app.use("/zip", zipRouter);
 
-app.listen(3006);
+app.listen(httpPort);
 
 const https = require("https");
 const fs = require("fs");
@@ -37,3 +38,4 @@ const options = {
 
 https.createServer(options, app).listen(port);
 console.log("Running app on port port. Visit: https://localhost:" + port + "/");
+console.log("Running app on port port. Visit: http://localhost:" + httpPort + "/");
